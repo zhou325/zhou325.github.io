@@ -1,37 +1,137 @@
-## Welcome to GitHub Pages
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Brain graph networks</title>
+  <script>
+    var brain_mesh = "{{ url_for('static', filename='assets/brainOrig.stl') }}";
+  </script>
 
-You can use the [editor on GitHub](https://github.com/zhou325/zhou325.github.io/edit/master/index.md) to maintain and preview the content for your website in Markdown files.
+  {% assets "js3" %}
+  <script type="text/javascript" src="{{ ASSET_URL }}" defer></script>
+  {% endassets %}
+  {% assets "css" %}
+  <link rel="stylesheet" href="{{ ASSET_URL }}" />
+  {% endassets %}
+</head>
+<body>
+  <div class="row no-gutters">
+      <div id="sidebar" class="col-md-3">
+        <div class="container">
+          <div id="plot-selector">
+            <label>Plot:</label>
+            <select id="vistype">
+                <option selected value="wheel">Donut Chart</option>
+                <option value="nodelink3d">3D Physical Node Link</option>
+            </select>
+          </div>
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+          <div id="demo-group" style="padding-top:6px">
+            <input type="button" class="btn btn-secondary active" id="demoDMN" value="DMN">
+            <input type="button" class="btn btn-secondary" id="demoSN" value="SN">
+            <input type="button" class="btn btn-secondary" id="demoECN" value="ECN">
+          </div>
 
-### Markdown
+          <div data-toggle="buttons" style="padding-top:8px">
+          <label class="btn btn-secondary active" data-toggle="collapse" data-parent="#accordion" href="#collapseOne"><input type="radio" name="vismode" value="double" >Double</label>
+          <label class="btn btn-secondary"  data-toggle="collapse" data-parent="#accordion" href="#collapseTwo"><input type="radio" name="vismode" value="single">Single</label>
+          </div>
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+          <div class="panel-group" id="accordion">
+            <div class="panel panel-default">
+                <div id="collapseOne" class="panel-collapse collapse">
+                    <form method="post" id="upload2" enctype="multipart/form-data" action="" >
+                      <div class="form-group">
+                        <!-- Matrix -->
+                        <label for="matrix" style="padding-top:8px;font-weight:bold">Upload Left Matrix</label>
+                        <input type="file" class="form-control-file matrix" id="matrix1" multiple size="1" name="matrix1" aria-describedby="file-descipt1">
+                        <label for="matrix" style="padding-top:8px;font-weight:bold">Upload Right Matrix</label>
+                        <input type="file" class="form-control-file matrix" id="matrix2" multiple size="1"  name="matrix2">
+                        <small id="file-descript1" style="padding-top:8px" class="form-text text-muted">Please upload csv containing correlation matrix</small>
+                        <br />
+                        <!-- Labels -->
+                        <label for="label1" style="padding-top:8px">Add Labels</label>
+                        <input type="file" class="form-control-file labels" id="label1" multiple size="1" name="label1" aria-describedby="label1-descript">
 
-```markdown
-Syntax highlighted code block
+                        <!-- Group Information -->
+                        <label for="groupinfo1" style="padding-top:8px">Add Group Information</label>
+                        <input type="file" class="form-control-file labels" id="groupinfo1" multiple size="1" name="groupinfo1" aria-describedby="groupinfo1-descript">
 
-# Header 1
-## Header 2
-### Header 3
+                        <!-- coordinates -->
+                        <label for="coordinates1" style="padding-top:8px">Add Coordinates</label>
+                        <input type="file" class="form-control-file labels" id="coordinates1" multiple size="1" name="coordinates1" aria-describedby="coordinates1-descript">
+                      </div>
+                      <input type="submit" value="Submit" id="submit-upload2">
+                    </form>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div id="collapseTwo" class="panel-collapse collapse">
+                    <form method="post" id="upload1" enctype="multipart/form-data" action="" >
+                      <div class="form-group">
+                        <!-- Matrix -->
+                        <label for="matrix" style="padding-top:8px;font-weight:bold">Upload Matrix</label>
+                        <input type="file" class="form-control-file matrix" id="matrix" multiple size="1" name="matrix" aria-describedby="file-descipt">
+                        <small id="file-descript" class="form-text text-muted">Please upload csv containing correlation matrix</small>
+                        <br />
+                        <!-- Labels -->
+                        <label for="label" style="padding-top:8px">Add Labels</label>
+                        <input type="file" class="form-control-file labels" id="label" multiple size="1" name="label" aria-describedby="label-descript">
 
-- Bulleted
-- List
+                        <!-- Group Information -->
+                        <label for="groupinfo" style="padding-top:8px">Add Group Information</label>
+                        <input type="file" class="form-control-file labels" id="groupinfo" multiple size="1" name="groupinfo" aria-describedby="groupinfo-descript">
 
-1. Numbered
-2. List
+                        <!-- coordinates -->
+                        <label for="coordinates" style="padding-top:8px">Add Coordinates</label>
+                        <input type="file" class="form-control-file labels" id="coordinates" multiple size="1" name="coordinates" aria-describedby="coordinates-descript">
+                        
+                      </div>
+                      <input type="button" id="submit-upload1" value="Submit">
+                    </form>
+                </div>
+            </div>
+          </div>
+        </div>
 
-**Bold** and _Italic_ and `Code` text
+      <br>
 
-[Link](url) and ![Image](src)
-```
+      <div class="container" id="statistics">
+        <label>Cutoff Value</label>
+        <span id="cutoff-val"></span>
+      </div>
+        <!-- <br> -->
+        <!-- <label for="similar-edge-checkbox">Show similar edges</label>
+        <input type="checkbox" name="similar-edge-checkbox" id ="similar-edge-checkbox" checked> -->
+        <!-- <br> -->
+        <!-- <label for="negative-correlation">Include Negative correlation</label>
+        <input type="checkbox" name="negative-correlation-checkbox" id = "negative-correlation-checkbox" checked> -->
+        <div id="edges-IO" class="container"></div>
+        <div id="chart-IO" class="container" style="border-top:solid")>
+          <!-- <form id="edgetype">
+            <label>Zombie Edges
+              <input name="edge-color-btn" type="radio" value="tree" checked="checked">
+            </label>
+            <label>Compare & Contrast
+                <input name="edge-color-btn" type="radio" value="compare">
+            </label>
+          </form> -->
+        </div>
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+      </div>
+      <div id="content" class="vwrapper col-md-9">
+        <div id="network-display">
+          <canvas id="draw-canvas" width=0 height=0></canvas>
+            <div id="frame-container">
+            </div>
+        </div>
+        <div id="slidercontainer">
 
-### Jekyll Themes
+        </div>
+        <div id="chart-display">
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/zhou325/zhou325.github.io/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+        </div>
+      </div>
+  </div>
+</body>
+</html>
